@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompts3 ➔ Gemini AI 이미지 프롬프트 스튜디오</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 기본 테마 변수 (기본값은 다크 모드) */
+        :root {
+            --primary-gpt: #10b981;
+            --primary-gemini: #0ea5e9;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --font-display: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+            --font-body: 'Noto Sans KR', sans-serif;
+        }
+
+        /* 라이트 모드용 기본 스케일 정의 */
+        .light-theme-base {
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-body);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+            letter-spacing: -0.03em;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 상단 바탕색 컨트롤 테마 바 */
+        .top-control-bar {
+            max-width: 1680px;
+            margin: 0 auto;
+            padding: 25px 40px 0 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .selector-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .selector-box select {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .selector-box select option {
+            background-color: #1e293b;
+            color: #fff;
+        }
+
+        header {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 40px 25px 40px;
+            text-align: center;
+        }
+
+        .badge-premium {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%);
+            border: 1px solid var(--border-color);
+            color: #38bdf8;
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        header h1 {
+            font-family: var(--font-display);
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 14px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        /* 메인 레이아웃 워크스페이스 */
+        .workspace-wrapper {
+            max-width: 1680px;
+            margin: 0 auto 60px auto;
+            padding: 0 40px;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .panel-gpt { border-top: 2px solid rgba(16, 185, 129, 0.3); }
+        .panel-gpt::after { background: var(--primary-gpt); }
+        .panel-gemini { border-top: 2px solid rgba(14, 165, 233, 0.3); }
+        .panel-gemini::after { background: var(--primary-gemini); }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            font-family: var(--font-display);
+        }
+        .panel-gpt .panel-title { color: var(--primary-gpt); }
+        .panel-gemini .panel-title { color: var(--primary-gemini); }
+
+        label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 카테고리 및 옵션 그룹 디자인 */
+        .category-section {
+            margin-bottom: 25px;
+        }
+
+        .options-group-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            background-color: rgba(15, 23, 42, 0.05);
+        }
+
+        .category-btn {
+            background-color: rgba(71, 85, 105, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 9px 8px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover { background-color: rgba(71, 85, 105, 0.3); }
+        .category-btn.active {
+            background-color: rgba(16, 185, 129, 0.15);
+            border-color: var(--primary-gpt);
+            color: #10b981;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+        }
+
+        /* 현실 / 비현실(2D) 토글 세그먼트 버튼 디자인 스타일 */
+        .toggle-container {
+            display: flex;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .toggle-btn.active.real {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
+        }
+
+        .toggle-btn.active.flat {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(225, 29, 72, 0.2);
+        }
+
+        /* 텍스트 입력창 및 결과창 규격 */
+        textarea, .output-box {
+            width: 100%;
+            height: 180px;
+            padding: 18px;
+            background-color: rgba(15, 23, 42, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        textarea { resize: none; outline: none; transition: all 0.2s; }
+        textarea:focus { border-color: var(--primary-gpt); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+        .output-box { overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+        .output-box.generated { border-color: rgba(14, 165, 233, 0.4); background-color: rgba(14, 165, 233, 0.02); }
+
+        /* 액션 버튼 */
+        .btn {
+            width: 100%; padding: 18px; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.2s; font-family: var(--font-display);
+        }
+        .btn-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2); }
+        .btn-green:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); }
+        .btn-blue { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: #fff; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.2); }
+        .btn-blue:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3); }
+
+        /* 이미지 보드 뷰어 컨테이너 */
+        .image-container {
+            border: 2px dashed var(--border-color); border-radius: 16px; min-height: 300px; margin-top: 25px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-color: rgba(15, 23, 42, 0.02); overflow: hidden; position: relative; transition: all 0.2s; padding: 20px;
+        }
+        .image-container:hover, .image-container:focus { outline: none; border-color: #64748b; }
+        .image-container img { max-width: 100%; max-height: 340px; object-fit: contain; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .placeholder-text { color: var(--text-muted); text-align: center; font-size: 0.95rem; line-height: 1.6; }
+        .placeholder-text i { font-size: 2.3rem; margin-bottom: 12px; display: block; color: var(--text-muted); }
+
+        mark { background-color: rgba(14, 165, 233, 0.15); color: #0ea5e9; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid rgba(14, 165, 233, 0.2); }
+        /* 비현실(2D Flat) 전용 하이라이트 스타일 */
+        mark.flat-mark { background-color: rgba(225, 29, 72, 0.15); color: #f43f5e; border-color: rgba(225, 29, 72, 0.3); }
+        
+        .badge-status { display: inline-block; background-color: rgba(254, 240, 138, 0.1); color: #d97706; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; margin-left: auto; font-weight: 600; border: 1px solid rgba(254, 240, 138, 0.2); }
+
+        /* 평가 리포트 슬라이드 업 팝업 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: var(--bg-card); border: 1px solid var(--border-color); width: 92%; max-width: 1100px;
+            border-radius: 28px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            max-height: 88vh; overflow-y: auto; transform: scale(0.95); transition: transform 0.4s;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
+        .modal-title { font-size: 1.6rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; font-family: var(--font-display); }
+        .close-btn { background: rgba(71, 85, 105, 0.2); color: var(--text-main); border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .close-btn:hover { background: rgba(71, 85, 105, 0.4); }
+
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 35px; }
+        .comp-box { text-align: center; background: rgba(15, 23, 42, 0.03); border-radius: 20px; padding: 24px; border: 1px solid var(--border-color); }
+        .comp-box img { max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 12px; }
+        .comp-label { font-weight: 700; margin-top: 15px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .report-section { background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .report-section.warning { background: rgba(234, 179, 8, 0.04); border-color: rgba(234, 179, 8, 0.2); }
+        .report-title { font-weight: 700; font-size: 1.15rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); }
+        .report-list { padding-left: 24px; line-height: 1.7; font-size: 1rem; color: var(--text-main); opacity: 0.9; }
+        .report-list li { margin-bottom: 6px; }
+
+        footer { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.95rem; border-top: 1px solid var(--border-color); max-width: 1600px; margin: 0 auto; }
+
+        @media (max-width: 1100px) {
+            .workspace { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-control-bar">
+    <div class="selector-box">
+        <i class="fa-solid fa-moon" style="color:var(--primary-gemini)"></i> Dark 모드 테마: 
+        <select id="darkThemeDropdown" onchange="applyTheme('dark')">
+            <option value="#0f172a">다크 미드나잇 블루 (기본)</option>
+            <option value="#0a0f1d">딥 나이트 오션 블랙</option>
+            <option value="#18181b">어반 다크 슬레이트 무광</option>
+            <option value="#121212">퓨어 제트 블랙 에디션</option>
+        </select>
+    </div>
+    
+    <div class="selector-box">
+        <i class="fa-solid fa-sun" style="color:var(--primary-gpt)"></i> White 모드 테마: 
+        <select id="whiteThemeDropdown" onchange="applyTheme('white')">
+            <option value="" disabled selected hidden>모드 선택 안함</option>
+            <option value="#ffffff">퓨어 스노우 화이트</option>
+            <option value="#f8fafc">스마트 테크 슬레이트 앤 화이트</option>
+            <option value="#fdfbf7">내추럴 웜 코튼 크림</option>
+            <option value="#f4f4f5">소프트 노르딕 쿨 그레이</option>
+        </select>
+    </div>
+</div>
+
+<header>
+    <div class="badge-premium">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> 2D Flat & 3D Shading 제어 인젝터 탑재
+    </div>
+    <h1>Prompts3 ➔ Gemini 크로스 분석 캔버스</h1>
+    <p>DALL-E 최적화 프롬프트의 특징을 세부 분석하여, 구글 제미나이(Imagen 3) 특유의 마네킹 같은 묵직함을 날려버릴 맞춤형 필터를 주입합니다.</p>
+</header>
+
+<main class="workspace-wrapper">
+    <div class="workspace">
+        
+        <div class="panel panel-gpt">
+            <div class="panel-title">
+                <i class="fa-solid fa-circle-dot"></i> STEP 1: 검증 카테고리 및 출력 모드 설정
+            </div>
+            
+            <div class="category-section">
+                <label><i class="fa-solid fa-layer-group"></i> 24대 타겟 카테고리 선택</label>
+                <div class="category-grid" id="categoryGrid"></div>
+            </div>
+
+            <div class="options-group-grid">
+                <div>
+                    <label><i class="fa-solid fa-sliders"></i> 이미지 출력 감성 모드 제어</label>
+                    <div class="toggle-container">
+                        <button id="modeReal" class="toggle-btn real active" onclick="setRenderMode('real')">
+                            <i class="fa-solid fa-cube"></i> 현실 (3D/시네마틱)
+                        </button>
+                        <button id="modeFlat" class="toggle-btn flat" onclick="setRenderMode('flat')">
+                            <i class="fa-solid fa-palette"></i> 비현실 (2D Flat 그래픽)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <label for="gptPrompt"><i class="fa-solid fa-quote-left"></i> 원본 프롬프트 입력 데이터</label>
+            <textarea id="gptPrompt" placeholder="Prompts3 카테고리에서 가져온 프롬프트 원문을 입력하세요..."></textarea>
+            
+            <button class="btn btn-green" onclick="generateGeminiPrompt()">
+                <i class="fa-solid fa-arrows-rotate"></i> 제미나이 튜닝 엔진 가동하기
+            </button>
+            
+            <label style="margin-top: 30px;"><i class="fa-regular fa-image"></i> Prompts3 원본 레퍼런스 이미지</label>
+            <div class="image-container" id="leftImageContainer" tabindex="0">
+                <div class="placeholder-text">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    우클릭 후 <b>이미지 복사 ➔ 여기 클릭 후 Ctrl + V</b>로 이미지를 투입하세요.
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-gemini">
+            <div class="panel-title">
+                <i class="fa-solid fa-sparkles"></i> STEP 2: 제미나이 전용 특화 구조 재조합
+                <span class="badge-status" id="statusBadge">대기 중</span>
+            </div>
+            
+            <label><i class="fa-solid fa-terminal"></i> 제미나이(Imagen 3) 최적화 변환 프롬프트</label>
+            <div class="output-box" id="geminiOutput">좌측에서 프롬프트를 입력하고 변환 버튼을 누르면 카테고리별 특화 보정 3단계 명령어가 실시간 조립됩니다.</div>
+            
+            <button class="btn btn-blue" onclick="copyAndAlert()">
+                <i class="fa-regular fa-copy"></i> 보정 프롬프트 복사 후 제미나이 이동
+            </button>
+            
+            <label style="margin-top: 30px;"><i class="fa-regular fa-image"></i> 제미나이 생성 이미지 스크랩비교</label>
+            <div class="image-container" id="rightImageContainer" tabindex="0">
+                <div class="placeholder-text">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    제미나이가 생성한 결과를 복사해 여기에 <b>Ctrl + V</b>로 넣으면<br><b>[카테고리 크로스 분석창]</b>이 활성화됩니다.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div class="modal-overlay" id="evalModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fa-solid fa-square-poll-vertical" style="color:var(--primary-gemini)"></i> GPT vs Gemini 카테고리 매칭 매니페스트
+            </div>
+            <button class="close-btn" onclick="closeModal()">분석창 닫기</button>
+        </div>
+        
+        <div class="comparison-grid">
+            <div class="comp-box" style="border-top: 3px solid var(--primary-gpt)">
+                <div id="modalLeftImg"></div>
+                <div class="comp-label" style="color: var(--primary-gpt);"><i class="fa-solid fa-circle-check"></i> Prompts3 원본레퍼런스</div>
+            </div>
+            <div class="comp-box" style="border-top: 3px solid var(--primary-gemini)">
+                <div id="modalRightImg"></div>
+                <div class="comp-label" style="color: var(--primary-gemini);"><i class="fa-solid fa-wand-magic-sparkles"></i> 제미나이 튜닝 결과물</div>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <div class="report-title" style="color: #10b981;">
+                <i class="fa-solid fa-circle-nodes"></i> 선택한 카테고리 전용 주입 필터 및 강점
+            </div>
+            <ul class="report-list" id="strengthList"></ul>
+        </div>
+
+        <div class="report-section warning">
+            <div class="report-title" style="color: #eab308;">
+                <i class="fa-solid fa-triangle-exclamation"></i> 제미나이가 버릇을 못 고쳤을 때 쓰는 마법의 응급처치 단어
+            </div>
+            <ul class="report-list" id="weaknessList"></ul>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 Prompts3 ➔ Gemini Vector Pipeline Engineering. Reality Filter Architecture.</p>
+</footer>
+
+<script>
+    function applyTheme(mode) {
+        const bodyEl = document.body;
+        if (mode === 'dark') {
+            document.getElementById('whiteThemeDropdown').selectedIndex = 0;
+            bodyEl.classList.remove('light-theme-base');
+            bodyEl.style.backgroundColor = document.getElementById('darkThemeDropdown').value;
+        } else if (mode === 'white') {
+            bodyEl.classList.add('light-theme-base');
+            bodyEl.style.backgroundColor = document.getElementById('whiteThemeDropdown').value;
+        }
+    }
+
+    const categories = [
+        { id: 'all', name: '전체' },
+        { id: 'favorite', name: '★ 즐겨찾기' },
+        { id: 'ads_poster', name: '광고/포스터' },
+        { id: 'photo_filter', name: '사진 변환/필터' },
+        { id: 'surreal', name: '상상/초현실' },
+        { id: 'profile', name: '프로필/아바타' },
+        { id: 'character', name: '만화/일러스트' },
+        { id: 'product_mockup', name: '굿즈/목업' },
+        { id: 'hobby_life', name: '취미/라이프' },
+        { id: 'infographic', name: '인포그래픽/안내' },
+        { id: 'wallpaper', name: '배경화면' },
+        { id: 'marketing', name: 'SNS/카드뉴스' },
+        { id: 'season_event', name: '시즌/이벤트' },
+        { id: 'youtube', name: '유튜브/썸네일' },
+        { id: 'travel', name: '여행' },
+        { id: 'food_cooking', name: '음식·요리' },
+        { id: 'tech', name: '자동차·IT' },
+        { id: 'game', name: '게임화면' },
+        { id: 'fortune', name: '운세·MBTI' },
+        { id: 'planner', name: '달력·플래너' },
+        { id: 'pet', name: '반려동물' },
+        { id: 'fashion', name: '패션·뷰티' },
+        { id: 'sports', name: '스포츠·운동' },
+        { id: 'books', name: '책·독서' },
+        { id: 'interior', name: '집·인테리어' },
+        { id: 'ui_design', name: '앱·웹·디자인' },
+        { id: 'hobby_daily', name: '취미·일상' }
+    ];
+
+    let selectedCategoryId = 'all';
+    let currentRenderMode = 'real'; // 기본 세팅: 현실모드
+    let plainTextToCopy = "";
+    let leftImgSrc = "";
+    let rightImgSrc = "";
+
+    // 대시보드 그리드 생성
+    const grid = document.getElementById('categoryGrid');
+    categories.forEach((cat) => {
+        const btn = document.createElement('button');
+        btn.className = `category-btn ${cat.id === selectedCategoryId ? 'active' : ''}`;
+        btn.innerText = cat.name;
+        btn.onclick = () => selectCategory(cat.id, btn);
+        grid.appendChild(btn);
+    });
+
+    function selectCategory(id, element) {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        element.classList.add('active');
+        selectedCategoryId = id;
+        generateGeminiPrompt();
+    }
+
+    // 현실 vs 비현실 스위칭 함수
+    function setRenderMode(mode) {
+        currentRenderMode = mode;
+        document.getElementById('modeReal').classList.remove('active');
+        document.getElementById('modeFlat').classList.remove('active');
+        
+        if(mode === 'real') {
+            document.getElementById('modeReal').classList.add('active');
+        } else {
+            document.getElementById('modeFlat').classList.add('active');
+        }
+        generateGeminiPrompt();
+    }
+
+    // 제미나이 전용 3단계 맵핑 엔진
+    function generateGeminiPrompt() {
+        const input = document.getElementById('gptPrompt').value.trim();
+        if (!input) return;
+
+        let targetDiagnosis = "기본 중화 레이어 (Default Balancing Filter)";
+        let specificFixCode = "Style: Clean vibrant graphic digital rendering";
+        let categoryGuardrails = "Smooth shadow contrast blending, crisp line vector edges.";
+
+        switch(selectedCategoryId) {
+            case 'marketing':
+            case 'ads_poster':
+            case 'youtube':
+            case 'infographic':
+                targetDiagnosis = "홍보 디자인 가독성 확보 레이어 (Flat Vector Shield)";
+                specificFixCode = "Style: High-contrast commercial flat graphic design, vibrant vivid pop colors.\\nLighting: Bright crisp uniform studio backlighting, completely flat minimal background color panels.";
+                categoryGuardrails = "Eliminate deep artistic rendering details to leave pure space for vector elements and layout structures. No heavy moody gradients.";
+                break;
+            case 'character':
+            case 'profile':
+            case 'surreal':
+                targetDiagnosis = "일러스트 및 캐릭터 왜곡 방지 레이어 (Anti-Wax/Anti-Mannequin System)";
+                specificFixCode = "Style: 2D cell-shaded art style, friendly charming facial proportions, cute expressive anime eyes, smiling adorable expression.\\nColors: Soft clean cell shading palette, cheerful light tones.";
+                categoryGuardrails = "Absolute NO hyper-realism, NO lifelike human skin textures, NO creepy wax figure glare, NO heavy mannequin-like plastic reflections.";
+                break;
+            case 'product_mockup':
+            case 'food_cooking':
+            case 'fashion':
+            case 'interior':
+                targetDiagnosis = "커머스 고화질 제품 카탈로그 최적화 (Premium Studio Photography Setup)";
+                specificFixCode = "Style: Professional corporate advertising look, sharp macro focus on the center product, clean surface texture clarity.\\nEnvironment: Clean uniform white cyc studio studio layout, soft panel strobe highlights.";
+                categoryGuardrails = "The target object must be neatly centered. Avoid injecting dramatic cinematic environment dust, heavy shadows, or random outdoor ambient parameters.";
+                break;
+            case 'ui_design':
+            case 'planner':
+            case 'wallpaper':
+                targetDiagnosis = "디지털 레이아웃 구조화 레이어 (Clean Orthogonal Grid Control)";
+                specificFixCode = "Style: Clean flat application UI presentation style, perfect symmetrical geometric forms, minimal blueprint structure.";
+                categoryGuardrails = "Perfectly straight frontal viewing angle. Absolutely zero isometric distortion, zero extreme tilt camera views, clean geometric solid fields.";
+                break;
+            default:
+                targetDiagnosis = "캐주얼 브라이트니스 인젝터 (Casual Lightening Layer)";
+                specificFixCode = "Style: Clean bright cheerful graphic style, soft contrast curve setting, welcoming and lighthearted essence.";
+                categoryGuardrails = "Neutralize default intense cinematic values or heavy painting look. Smooth outlines to promote an elegant commercial layout.";
+        }
+
+        // [핵심 변경] 사용자가 '비현실(2D Flat)' 버튼을 활성화했을 때, 요청하신 무적의 제어 코드를 주입
+        let flatModeForceCommand = "";
+        let flatHtmlMarker = "";
+        
+        if (currentRenderMode === 'flat') {
+            flatModeForceCommand = "\n[CRITICAL DIRECTIVE: FORCE 2D FLAT STYLE]\nMake it completely flat 2D graphic illustration, absolutely no shading gradients, completely white background. Disable all lifelike depth or dimensional rendering maps.";
+            flatHtmlMarker = `\n\n<strong style="color:#f43f5e">[CRITICAL DIRECTIVE: FORCE 2D FLAT STYLE]</strong>\n<mark class="flat-mark">Make it completely flat 2D graphic illustration, absolutely no shading gradients, completely white background. Disable all lifelike depth or dimensional rendering maps.</mark>`;
+        }
+
+        plainTextToCopy = `[Core Prompt Concept]
+${input}
+
+[Engine Dynamic Tuning: ${targetDiagnosis}]
+${specificFixCode}
+
+[Anti-Heavy Shading Guardrails]
+${categoryGuardrails}
+Anti-Realism Filter: No creepy lifelike 3D plastic/wax details, suppress moody heavy shadows, ensure bright high-contrast commercial readability.${flatModeForceCommand}`;
+
+        const htmlOutput = `<strong>[Core Prompt Concept]</strong>
+${input}
+
+<strong>[Engine Dynamic Tuning: <span style="color:var(--primary-gemini)">${targetDiagnosis}</span>]</strong>
+<mark>${specificFixCode.replace(/\\n/g, '<br>')}</mark>
+
+<strong>[Target Guardrails]</strong>
+<mark>${categoryGuardrails}</mark>
+Anti-Realism Filter: No creepy lifelike 3D plastic/wax details, suppress moody heavy shadows, ensure bright high-contrast commercial readability.${flatHtmlMarker}`;
+
+        document.getElementById('geminiOutput').innerHTML = htmlOutput;
+        const badge = document.getElementById('statusBadge');
+        badge.innerText = currentRenderMode === 'flat' ? "2D 강제보정 완료" : "보정 완료";
+        badge.style.color = currentRenderMode === 'flat' ? "#f43f5e" : "#10b981";
+        badge.style.borderColor = currentRenderMode === 'flat' ? "rgba(244, 63, 94, 0.3)" : "rgba(16, 185, 129, 0.3)";
+        badge.style.backgroundColor = currentRenderMode === 'flat' ? "rgba(244, 63, 94, 0.1)" : "rgba(16, 185, 129, 0.1)";
+        document.getElementById('geminiOutput').classList.add('generated');
+    }
+
+    function copyAndAlert() {
+        if(!plainTextToCopy) { alert("프롬프트를 먼저 생성해 주세요."); return; }
+        navigator.clipboard.writeText(plainTextToCopy).then(() => {
+            alert('해당 모드 제어 코드가 조립된 프롬프트가 복사되었습니다! 제미나이 창에 붙여넣으세요.');
+            window.open('https://gemini.google.com/', '_blank');
+        });
+    }
+
+    document.getElementById('gptPrompt').addEventListener('input', generateGeminiPrompt);
+
+    function openEvalModal() {
+        if(!leftImgSrc) { alert("비교 분석을 위해 왼쪽 Prompts3 원본 영역에도 이미지를 붙여넣어 주세요!"); return; }
+        
+        document.getElementById('modalLeftImg').innerHTML = `<img src="${leftImgSrc}">`;
+        document.getElementById('modalRightImg').innerHTML = `<img src="${rightImgSrc}">`;
+
+        let strengths = ["[Guardrail Core] 제미나이 엔진 내부의 무겁고 심오한 그림자 강도를 대폭 걷어내고, 전면 스튜디오형 플랫 조명 효과를 유도했습니다."];
+        let weaknesses = ["만약 결과가 여전히 디자인 소스로 쓰기에 너무 입체적이라면, 변환기 상단의 [비현실(2D Flat 그래픽)] 버튼을 누른 후 다시 변환하여 제미나이에 넣어보세요! 효과가 확실해집니다."];
+
+        if(currentRenderMode === 'flat') {
+            strengths.push("[2D 강제 제어 시스템 작동] 'Make it completely flat 2D graphic illustration' 명령어가 주입되어 제미나이의 3차원 물리 렌더링 회로가 차단되었습니다. 완전한 웹 리소스용 플랫 테마로 출력됩니다.");
+        }
+
+        document.getElementById('strengthList').innerHTML = strengths.map(s => `<li>${s}</li>`).join('');
+        document.getElementById('weaknessList').innerHTML = weaknesses.map(w => `<li>${w}</li>`).join('');
+        document.getElementById('evalModal').classList.add('active');
+    }
+
+    function closeModal() { document.getElementById('evalModal').classList.remove('active'); }
+
+    function setupImagePasteAndDrop(containerId, isLeftPanel) {
+        const container = document.getElementById(containerId);
+        
+        container.addEventListener('paste', function(e) {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            let imgFound = false;
+
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    imgFound = true;
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) { displayImage(container, event.target.result, isLeftPanel); };
+                    reader.readAsDataURL(blob);
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            if (!imgFound) {
+                const htmlData = e.clipboardData.getData('text/html');
+                if (htmlData) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlData, 'text/html');
+                    const imgTag = doc.querySelector('img');
+                    if (imgTag && imgTag.src) {
+                        displayImage(container, imgTag.src, isLeftPanel);
+                        e.preventDefault();
+                        return;
+                    }
+                }
+                const textData = e.clipboardData.getData('text').trim();
+                if (textData && (textData.startsWith('http://') || textData.startsWith('https://') || textData.startsWith('data:image'))) {
+                    displayImage(container, textData, isLeftPanel);
+                    e.preventDefault();
+                }
+            }
+        });
+
+        container.addEventListener('dragover', (e) => { e.preventDefault(); container.classList.add('dragover'); });
+        container.addEventListener('dragleave', () => { container.classList.remove('dragover'); });
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            container.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.indexOf('image') !== -1) {
+                const reader = new FileReader();
+                reader.onload = function(event) { displayImage(container, event.target.result, isLeftPanel); };
+                reader.readAsDataURL(files[0]);
+            }
+        });
+    }
+
+    function displayImage(container, src, isLeftPanel) {
+        container.innerHTML = `<img src="${src}" alt="Canvas View">`;
+        if (isLeftPanel) {
+            leftImgSrc = src;
+            // 이미지 투입 시 기본 '현실' 상태로 자동 생성 트리거
+            generateGeminiPrompt();
+        } else {
+            rightImgSrc = src;
+            setTimeout(openEvalModal, 400);
+        }
+    }
+
+    setupImagePasteAndDrop('leftImageContainer', true);
+    setupImagePasteAndDrop('rightImageContainer', false);
+</script>
+
+</body>
+</html>
